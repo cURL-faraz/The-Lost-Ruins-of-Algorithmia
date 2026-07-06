@@ -12,15 +12,23 @@ int cap;
 
 vector<vector<int>> adj_cells = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
 
-void add_neighbors(const vector<char>& cells, int i, int j, int r, int c, vector<vector<Edge>>& neighbors)
+void add_neighbors(const vector<char>& cells, int i, int j, int S, int E, int r, int c, vector<vector<Edge>>& neighbors)
 {
 if(cells[i * c + j] != '#'){
+bool v_is_S = ((i * c + j) == S);
+bool v_is_E = ((i * c + j) == E);
 for(const auto& cell : adj_cells){
 int cell_r = i + cell[0], cell_c = j + cell[1]; 
-if(cell_r >= 0 && cell_r < r && cell_c >= 0 && cell_c < c && cells[cell_r *c + cell_c] != '#')
+if(cell_r >= 0 && cell_r < r && cell_c >= 0 && cell_c < c && cells[cell_r * c + cell_c] != '#')
 {
+if((v_is_S || v_is_E) && ((cell_r * c + cell_c) == S || (cell_r * c + cell_c) == E))
+{
+continue; 
+}
+else{
 neighbors[i * c + j + r * c].push_back({cell_r * c + cell_c, (int)neighbors[cell_r * c + cell_c].size()}); 
 neighbors[cell_r * c + cell_c].push_back({i * c + j + r * c, (int)neighbors[i * c + j + r * c].size() - 1, 0}); 
+}
 }
 }
 }
@@ -120,6 +128,8 @@ if(sr == er && sc == ec){
 cout << 1; 
 return 0; 
 }
+
+bool SE_adjacent = ((abs(sr - er) + abs(sc - ec)) == 1); 
 for(int v = 0; v < r * c; v++)
 {
 adj_list[v].push_back({v + r * c}); 
@@ -134,12 +144,12 @@ for(int i = 0; i < r; i++)
 {
 for(int j = 0; j < c; j++)
 {
-add_neighbors(cells, i, j, r, c, adj_list); 
+add_neighbors(cells, i, j, sr * c + sc, er * c + ec, r, c, adj_list); 
 }}
 
 vector<int> level(2 * r * c); 
 vector<int> ptr(2 * r * c); 
-long long int num_p = 0; 
+long long int num_p = (SE_adjacent) ? 1 : 0; 
 
 while(bfs(sr * c + sc + r * c, er * c + ec, r, c, adj_list, level) != -1){
 for(int v = 0; v < 2 * r * c; v++){
